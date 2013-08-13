@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-BOX_NAME = ENV['BOX_NAME'] || "ubuntu"
+BOX_NAME = ENV['BOX_NAME'] || "makomi-host"
 BOX_URI = ENV['BOX_URI'] || "http://files.vagrantup.com/precise64.box"
 VF_BOX_URI = ENV['BOX_URI'] || "http://files.vagrantup.com/precise64_vmware_fusion.box"
 AWS_REGION = ENV['AWS_REGION'] || "us-east-1"
@@ -40,10 +40,16 @@ Vagrant::Config.run do |config|
         "echo 'Installation of VBox Guest Additions is proceeding in the background.'; " \
         "echo '\"vagrant reload\" can be used in about 2 minutes to activate the new guest additions.'; "
     end
+    # set hostname to BOX_NAME
+    pkg_cmd << "hostname " + BOX_NAME + ";"
+    pkg_cmd << "echo '" + BOX_NAME + "' > /etc/hostname;"
+    # change the second line of /etc/hosts to list our new hostname instead
+    pkg_cmd << "sed -e '2s/.*/127.0.1.1   " + BOX_NAME + "/' /etc/hosts;"
+    # install bonjour/avahi
+    pkg_cmd << "apt-get install avahi-daemon -y;"
     # Activate new kernel
-    #pkg_cmd << "shutdown -r +1; "
-    #config.vm.provision :shell, :inline => pkg_cmd
-    config.vm.provision :shell, :path => "makomi_provision.sh"
+    pkg_cmd << "shutdown -r +1; "
+    config.vm.provision :shell, :inline => pkg_cmd
   end
 end
 
