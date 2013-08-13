@@ -1,2 +1,2 @@
-apt-get install avahi-daemon
+apt-get install avahi-daemon -y
 shutdown -r +1
